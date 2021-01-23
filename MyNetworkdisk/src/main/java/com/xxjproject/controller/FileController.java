@@ -1,9 +1,6 @@
 package com.xxjproject.controller;
 
-import com.xxjproject.domain.Msg;
-import com.xxjproject.domain.User;
-import com.xxjproject.domain.UserFile;
-import com.xxjproject.domain.UserFileDelete;
+import com.xxjproject.domain.*;
 import com.xxjproject.service.UserFileDeleteService;
 import com.xxjproject.service.UserFileService;
 import com.xxjproject.service.UserService;
@@ -16,10 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,11 +66,13 @@ public class FileController {
 
     @ResponseBody
     @RequestMapping("/fileDownload.do")
-    public Msg fileDownload(int fileID, String username, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public Msg fileDownload(int fileID, String username,HttpServletRequest request,HttpServletResponse response) throws IOException {
         UserFile userFile = userFileService.getUserFileByFileID(fileID);
         String serverFileName = userFile.getFileName();
         String serverFilePath = "F:\\server\\userFile\\" + username + "\\" + serverFileName;
         File file = new File(serverFilePath);
+        User user = userService.getUserByUsername(username);
+        int role = user.getRole();
         if (file.exists()) {
             System.out.println("文件存在！！");
             response.setContentType("application/x-msdownload");
@@ -86,8 +82,21 @@ public class FileController {
             OutputStream out = response.getOutputStream();
             byte[] buff = new byte[1024];
             int len = 0;
-            while ((len = in.read(buff)) > 0) {
-                out.write(buff, 0, len);
+
+            if (role == 1) {
+                while ((len = in.read(buff)) > 0) {
+                    out.write(buff, 0, len);
+                }
+            }else{
+                //对非会员限速
+                while ((len = in.read(buff)) > 0) {
+                    out.write(buff, 0, len);
+                    try {
+                        Thread.sleep(17);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
             System.out.println("下载完成！！");
             in.close();
@@ -102,10 +111,13 @@ public class FileController {
     @ResponseBody
     @RequestMapping("/fileUpload.do")
     public Msg fileUpload(MultipartFile file, HttpServletRequest request) {
+
         System.out.println("文件上传");
         String username = (String) request.getSession().getAttribute("username");
         System.out.println("username = " + username);
-        Integer userID = userService.getUserByUsername(username).getUserID();
+        User user = userService.getUserByUsername(username);
+        Integer userID = user.getUserID();
+        int role = user.getRole();
         System.out.println("userID = " + userID);
         int size = (int)file.getSize();
         int oldSize = userService.getUserByUsername(username).getTotalFileSize();
@@ -134,13 +146,42 @@ public class FileController {
             uploadFile.getParentFile().mkdirs();
         }
         try {
+
+            if (role == 1)
             file.transferTo(uploadFile);
+            else {
+//                //对非会员限速,限制在60kb左右
+                InputStream is = file.getInputStream();
+                FileOutputStream os = new FileOutputStream(uploadFile);
+                byte[] buff = new byte[1024];
+                int len = 0;
+                while ((len = is.read(buff)) > 0) {
+                    os.write(buff, 0, len);
+                    try {
+                        Thread.sleep(17);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    is.close();
+                    os.close();
+                }
+            }
+//
+
+//            FileUploadThread fileUploadThread = new FileUploadThread(is, os, role);
+//            Thread thread = new Thread(fileUploadThread);
+//            thread.start();
+//            fileUploadThread.pauseThread();
+
+
             System.out.println("上传完成！！！！");
             int length = (int) uploadFile.length();
             String viewFileSize = FileUtil.getViewFileSize(length);
             String uploadTime = FileUtil.getTime();
             userFileService.insertUserFile(new UserFile(0, userID, fileName, length, uploadTime, postfix, viewFileSize));
             System.out.println("文件上传成功");
+
+
         } catch (IOException e) {
             return Msg.fail().add("fail", "uploadFail");
         }

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xxjproject.dao.UserFileDao">
+
+    <select id="selectUserFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID};
+    </select>
+
+    <insert id="insertUserFile">
+        insert into user_File (userID,fileName,fileSize,uploadTime,postfix,viewFileSize)
+        values (#{userID},#{fileName},#{fileSize},#{uploadTime},#{postfix},#{viewFileSize})
+    </insert>
+
+    <select id="selectUserFileByFileID" resultType="UserFile">
+        select fileID,userID,fileName,fiLeSize,postfix,viewFileSize from user_file where fileID = #{fileID}
+    </select>
+
+    <select id="selectUserImgFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix in ("bmp","jpg","jpeg","png","gif");
+    </select>
+
+    <select id="selectUserDocumentFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix in ("txt","doc","docx","pptx","pdf");
+
+    </select>
+
+    <select id="selectUserVideoFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix in ("avi","mvw","mpeg","rm","ram","mp4","flv");
+    </select>
+
+    <select id="selectUserMusicFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix in ("aif","aifc","aiff","asf","asp","asp","mp3");
+    </select>
+
+    <select id="selectUserCompressedFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix in ("7z","rar","zip","jar","tar","war","iso","gz","tar");
+    </select>
+
+    <select id="selectUserOtherFileByUserID" resultType="UserFile">
+        select fileID,user_info.userID,fileName,fileSize,uploadTime,postfix,viewFileSize
+        from user_file
+        LEFT JOIN user_info
+        ON user_file.`userID` = user_info.`userID`
+        WHERE user_info.`userID` = #{userID} AND postfix not in ("7z","rar","zip","jar","tar","war","iso","gz","tar"
+                                                                ,"aif","aifc","aiff","asf","asp","asp","mp3"
+                                                                ,"avi","mvw","mpeg","rm","ram","mp4","flv"
+                                                                ,"txt","doc","docx","pptx","pdf"
+                                                                ,"bmp","jpg","jpeg","png","gif");
+    </select>
+    <update id="updateFilenameByFileID">
+        update user_file set filename = #{arg0} where fileID =  #{arg1};
+    </update>
+
+    <delete id="deleteUserFileByFileID" >
+        delete from user_file where fileID = #{fileID}
+    </delete>
+
+    <update id="updateFileTotalSizeByUsername">
+        update user_file set totalFileSize = #{arg1} where username =  #{arg0};
+    </update>
+
+</mapper>

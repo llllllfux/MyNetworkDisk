@@ -61,15 +61,6 @@ public class FileDeleteController {
                 file.getViewFileSize()));
         int i = userFileDeleteService.deleteUserFileFromRecycleBin(fileID);
         if (i != -1){
-//            System.out.println("开始修改容量！！！");
-//            int userID = userFileService.getUserFileByFileID(fileID).getUserID();
-//            User user = userService.getUserByUserID(userID);
-//            int totalFileSize = user.getTotalFileSize();
-//            System.out.println("totalFileSize = " + totalFileSize);
-//            int newSize = totalFileSize -file.getFileSize();
-//            System.out.println("newSize = " + newSize);
-//            userService.modifyFileTotalSizeByUserID(userID,newSize);
-//            System.out.println("修改完成！");
             return Msg.success();
         }else
             return Msg.fail();
